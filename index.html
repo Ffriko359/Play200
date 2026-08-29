@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PLAY200 — منصة الألعاب والجوائز</title>
+<style>
+:root{--bg:#050508;--card:#0f0f14;--card2:#16161f;--border:#252530;--gold:#f0c400;--gold2:#ff9f0a;--gold-glow:rgba(240,196,0,.3);--purple:#a855f7;--purple-glow:rgba(168,85,247,.25);--text:#fff;--muted:#8b8b9a;--danger:#ff4757;--success:#2ed573;--info:#1e90ff;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;user-select:none;}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--gold)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes shine{0%{background-position:-200%}100%{background-position:200%}}
+
+#app{display:none;animation:fadeIn .5s ease}
+.top-bar{position:sticky;top:0;z-index:100;background:linear-gradient(180deg,rgba(5,5,8,.95),rgba(5,5,8,.8));backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;}
+.top-bar .logo-area{display:flex;align-items:center;gap:10px}
+.top-bar .logo-text{font-size:20px;font-weight:900;background:linear-gradient(135deg,var(--gold),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.coins-badge{background:linear-gradient(135deg,#1a1200,#0f0f14);border:1px solid var(--gold);border-radius:20px;padding:6px 14px;display:flex;align-items:center;gap:6px;font-weight:700;color:var(--gold);box-shadow:0 0 15px var(--gold-glow);animation:pulse 3s infinite;}
+
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:8px 0 calc(8px + env(safe-area-inset-bottom));z-index:100;}
+.nav-btn{background:none;border:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:600;cursor:pointer;padding:6px 12px;border-radius:14px;transition:.2s;}
+.nav-btn .nav-icon{font-size:22px}
+.nav-btn.active{color:var(--gold);background:rgba(240,196,0,.08)}
+
+.section{display:none;padding:16px 16px 90px;animation:fadeIn .4s ease}
+.section.active{display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:16px;margin-bottom:14px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);}
+.section-title{font-size:18px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+
+.hero{background:linear-gradient(135deg,var(--card),var(--card2));border:1px solid var(--border);border-radius:24px;padding:24px 20px;text-align:center;margin-bottom:20px;position:relative;overflow:hidden;}
+.hero::after{content:'';position:absolute;top:-50%;right:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(240,196,0,.06),transparent 60%);pointer-events:none;}
+.hero h1{font-size:26px;font-weight:900;margin-bottom:8px}
+.hero h1 span{color:var(--gold);text-shadow:0 0 20px var(--gold-glow)}
+.hero p{color:var(--muted);font-size:13px;line-height:1.7}
+
+.ad-banner{background:linear-gradient(90deg,#1a0f00,#0f0f14,#1a0f00);background-size:200% 100%;animation:shine 4s linear infinite;border:1px dashed rgba(240,196,0,.3);border-radius:16px;padding:14px;text-align:center;margin:14px 0;cursor:pointer;}
+.ad-banner .ad-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:4px}
+.ad-banner .ad-text{font-size:13px;color:var(--gold);font-weight:700}
+
+.challenge-item{display:flex;align-items:center;gap:12px;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;transition:.2s;}
+.challenge-item:active{transform:scale(.98)}
+.challenge-icon{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.challenge-info{flex:1}
+.challenge-info h4{font-size:14px;margin-bottom:3px}
+.challenge-info p{font-size:12px;color:var(--muted)}
+.challenge-reward{background:rgba(46,213,115,.1);border:1px solid rgba(46,213,115,.3);color:var(--success);padding:6px 12px;border-radius:10px;font-size:12px;font-weight:700;white-space:nowrap}
+
+.games-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+.game-card{background:linear-gradient(145deg,var(--card),var(--card2));border:1px solid var(--border);border-radius:20px;padding:18px 14px;text-align:center;cursor:pointer;transition:.25s;position:relative;overflow:hidden;}
+.game-card:active{transform:scale(.96)}
+.game-card:hover{border-color:rgba(240,196,0,.4)}
+.game-card .game-icon{width:60px;height:60px;margin:0 auto 10px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;background:linear-gradient(135deg,rgba(240,196,0,.15),rgba(168,85,247,.15));border:1px solid rgba(240,196,0,.2);box-shadow:0 4px 20px rgba(0,0,0,.3);animation:float 4s ease-in-out infinite;}
+.game-card h3{font-size:15px;font-weight:700;margin-bottom:4px}
+.game-card p{font-size:12px;color:var(--muted)}
+.game-card .game-points{color:var(--gold);font-size:11px;font-weight:700;margin-top:6px}
+.game-card.locked{opacity:.4;pointer-events:none}
+.game-card.locked .game-icon{filter:grayscale(1)}
+
+.reward-card{background:linear-gradient(145deg,var(--card),#111118);border:1px solid var(--border);border-radius:20px;padding:20px;text-align:center;margin-bottom:14px;position:relative;overflow:hidden;}
+.reward-card.featured{border-color:rgba(240,196,0,.4);box-shadow:0 0 30px rgba(240,196,0,.1);}
+.reward-card .reward-img{font-size:48px;margin-bottom:10px}
+.reward-card h3{font-size:16px;margin-bottom:6px}
+.reward-card p{font-size:13px;color:var(--muted);margin-bottom:12px}
+.reward-card .ticket-cost{display:inline-flex;align-items:center;gap:6px;background:rgba(240,196,0,.1);border:1px solid var(--gold);color:var(--gold);padding:8px 16px;border-radius:12px;font-weight:700;font-size:14px;}
+
+.game-overlay{position:fixed;inset:0;z-index:200;background:var(--bg);display:none;flex-direction:column;}
+.game-overlay.active{display:flex;animation:fadeIn .3s ease}
+.game-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);background:rgba(5,5,8,.9);backdrop-filter:blur(10px);}
+.game-header h3{font-size:16px;display:flex;align-items:center;gap:8px}
+.game-header .game-score{color:var(--gold);font-weight:800;font-size:18px}
+.game-area{flex:1;display:flex;align-items:center;justify-content:center;padding:10px;position:relative;overflow:hidden;}
+.game-canvas{background:var(--card);border:1px solid var(--border);border-radius:16px;max-width:100%;max-height:100%;box-shadow:0 10px 40px rgba(0,0,0,.5);}
+.game-controls{padding:14px 16px 24px;display:flex;gap:10px;justify-content:center;background:rgba(5,5,8,.9);border-top:1px solid var(--border);}
+.game-btn{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border:none;padding:14px 28px;border-radius:16px;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 6px 20px var(--gold-glow);transition:.2s;flex:1;max-width:160px;}
+.game-btn:active{transform:scale(.95)}
+.game-btn.secondary{background:var(--card2);color:var(--text);border:1px solid var(--border);box-shadow:none}
+
+.ad-modal{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.92);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:20px;}
+.ad-modal.active{display:flex}
+.ad-box{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:30px 24px;text-align:center;max-width:340px;width:100%;animation:fadeIn .4s ease;}
+.ad-box .ad-visual{width:80px;height:80px;margin:0 auto 18px;border-radius:24px;background:linear-gradient(135deg,var(--gold),var(--purple));display:flex;align-items:center;justify-content:center;font-size:36px;box-shadow:0 0 30px var(--gold-glow);animation:pulse 2s infinite;}
+.ad-box h2{font-size:20px;margin-bottom:10px}
+.ad-box p{color:var(--muted);font-size:14px;margin-bottom:20px;line-height:1.7}
+.ad-progress{height:6px;background:var(--border);border-radius:3px;margin-bottom:20px;overflow:hidden;}
+.ad-progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--gold),var(--purple));border-radius:3px;transition:width .1s linear;}
+
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-100px);background:var(--card);border:1px solid var(--border);padding:12px 20px;border-radius:14px;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;box-shadow:0 10px 40px rgba(0,0,0,.5);z-index:400;opacity:0;transition:.4s;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{border-color:var(--success);color:var(--success)}
+.toast.error{border-color:var(--danger);color:var(--danger)}
+
+.leader-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;margin-bottom:8px;background:var(--card2);border:1px solid var(--border);}
+.leader-row.top1{border-color:rgba(240,196,0,.4);background:rgba(240,196,0,.05)}
+.leader-row.top2{border-color:rgba(192,192,192,.3);background:rgba(192,192,192,.03)}
+.leader-row.top3{border-color:rgba(205,127,50,.3);background:rgba(205,127,50,.03)}
+.leader-rank{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;background:var(--border)}
+.leader-row.top1 .leader-rank{background:var(--gold);color:#000}
+.leader-row.top2 .leader-rank{background:#c0c0c0;color:#000}
+.leader-row.top3 .leader-rank{background:#cd7f32;color:#fff}
+.leader-name{flex:1;font-size:14px;font-weight:600}
+.leader-score{color:var(--gold);font-weight:800;font-size:14px}
+
+/* AUTH SCREEN */
+.auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--bg)}
+.auth-box{width:100%;max-width:420px;background:var(--card);border:1px solid var(--border);border-radius:28px;padding:32px 24px;box-shadow:0 20px 60px rgba(0,0,0,.6);position:relative;}
+.auth-tabs{display:flex;background:#020204;border:1px solid var(--border);border-radius:16px;padding:4px;margin-bottom:24px;}
+.auth-tab{flex:1;background:transparent;border:none;color:var(--muted);padding:12px;font-weight:600;font-size:14px;cursor:pointer;border-radius:12px;transition:.3s;}
+.auth-tab.active{background:#14141c;color:var(--gold);box-shadow:0 4px 12px rgba(0,0,0,.3);}
+.form-group{margin-bottom:16px;}
+.form-group label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:600;}
+.form-input{width:100%;background:#020204;border:1px solid var(--border);padding:14px 16px;border-radius:16px;color:#fff;font-size:15px;outline:none;transition:.2s;}
+.form-input:focus{border-color:var(--gold);box-shadow:0 0 12px var(--gold-glow);}
+.input-box{position:relative;display:flex;align-items:center;}
+.toggle-password{position:absolute;left:14px;background:none;border:none;cursor:pointer;font-size:18px;color:var(--muted);}
+.auth-btn{width:100%;background:var(--gold);color:#000;border:none;padding:16px;border-radius:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-top:5px;transition:.2s;box-shadow:0 6px 20px rgba(240,196,0,.25);}
+.auth-btn:active{transform:scale(.97)}
+.guest-btn{width:100%;background:#14141c;color:var(--text);border:1px solid var(--border);padding:14px;border-radius:16px;font-size:14px;font-weight:600;cursor:pointer;margin-top:12px;transition:.2s;}
+.guest-btn:hover{border-color:var(--gold);color:var(--gold);}
+.form-panel{display:none;}
+.form-panel.active{display:block;animation:fadeIn .3s ease;}
+.forgot-pass{text-align:left;margin-bottom:15px;}
+.forgot-pass a{color:var(--gold);font-size:12px;text-decoration:none;font-weight:600;}
+
+/* RESET MODAL */
+.reset-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);backdrop-filter:blur(15px);display:none;align-items:center;justify-content:center;padding:20px;z-index:9999;}
+.reset-overlay.active{display:flex}
+.reset-box{width:100%;max-width:430px;background:linear-gradient(145deg,#111118,#08080c);border:1px solid #292936;border-radius:30px;padding:30px 25px;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.9),inset 0 1px 0 rgba(255,255,255,.06);animation:fadeIn .3s ease;}
+.reset-close{position:absolute;top:14px;right:16px;width:35px;height:35px;border-radius:50%;border:1px solid #292936;background:#101016;color:#aaa;font-size:23px;cursor:pointer;}
+.reset-close:hover{color:var(--gold);border-color:var(--gold);}
+.reset-icon{width:68px;height:68px;margin:0 auto 18px;border-radius:21px;display:flex;align-items:center;justify-content:center;font-size:31px;background:rgba(240,196,0,.08);border:1px solid rgba(240,196,0,.25);box-shadow:0 0 30px rgba(240,196,0,.12);}
+.reset-box h2{text-align:center;color:var(--gold);font-size:22px;margin-bottom:10px;}
+.reset-box p{color:var(--muted);text-align:center;font-size:13px;line-height:1.8;margin-bottom:24px;}
+.otp-container{display:flex;justify-content:center;gap:8px;direction:ltr;margin:20px 0;}
+.otp-input{width:48px;height:58px;text-align:center;font-size:23px;font-weight:bold;color:#fff;background:#020204;border:1px solid #292936;border-radius:13px;outline:none;transition:.2s;}
+.otp-input:focus{border-color:var(--gold);box-shadow:0 0 15px var(--gold-glow);transform:translateY(-2px);}
+.otp-timer{text-align:center;color:var(--muted);font-size:12px;margin-bottom:15px;}
+#otpTimer{color:var(--gold);font-weight:bold;}
+.reset-back{display:block;width:100%;border:none;background:transparent;color:var(--muted);padding:13px;cursor:pointer;font-size:12px;}
+.reset-back:hover{color:var(--gold);}
+.reset-message{display:none;padding:12px;border-radius:12px;margin-bottom:15px;font-size:12px;text-align:center;}
+.reset-message.error{display:block;color:#ff7b86;background:rgba(255,71,87,.08);border:1px solid rgba(255,71,87,.2);}
+.reset-message.success{display:block;color:#7dffae;background:rgba(46,213,115,.08);border:1px solid rgba(46,213,115,.2);}
+.reset-success{text-align:center;}
+.success-icon{width:75px;height:75px;margin:0 auto 20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;color:#000;background:var(--success);box-shadow:0 0 35px rgba(46,213,115,.3);}
+
+@media(min-width:600px){.games-grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:900px){.games-grid{grid-template-columns:repeat(4,1fr)}.section{max-width:900px;margin:0 auto}}
+</style>
+</head>
+<body>
+
+<!-- ================= AUTH SCREEN ================= -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-box">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="width:80px;height:80px;border-radius:20px;margin:0 auto 12px;border:3px solid var(--gold);box-shadow:0 0 30px var(--gold-glow);background:linear-gradient(135deg,#1a0f2e,#0f0f1a);display:flex;align-items:center;justify-content:center;font-size:40px">🎮</div>
+      <h1 style="font-size:26px;font-weight:900"><span style="background:linear-gradient(135deg,var(--gold),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent">PLAY200</span></h1>
+      <p style="color:var(--muted);font-size:12px;margin-top:4px">200 لعبة. تحديات. جوائز حقيقية. 🏆</p>
+    </div>
+
+    <div class="auth-tabs" id="authTabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">تسجيل الدخول</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')">حساب جديد</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="loginPanel" class="form-panel active">
+      <div class="form-group">
+        <label>البريد الإلكتروني</label>
+        <input type="email" class="form-input" placeholder="example@gmail.com" id="loginEmail" dir="ltr">
+      </div>
+      <div class="form-group">
+        <label>كلمة المرور</label>
+        <div class="input-box">
+          <input type="password" class="form-input" placeholder="••••••••" id="loginPassword" dir="ltr">
+          <button type="button" class="toggle-password" onclick="togglePass('loginPassword',this)">👁️</button>
+        </div>
+      </div>
+      <div class="forgot-pass">
+        <a href="#" onclick="openReset(event)">نسيت كلمة المرور؟</a>
+      </div>
+      <button class="auth-btn" onclick="handleLogin()">🎮 دخول إلى الحساب</button>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="registerPanel" class="form-panel">
+      <div class="form-group">
+        <label>اسم اللاعب</label>
+        <input type="text" class="form-input" placeholder="أدخل اسمك الأسطوري" id="regName">
+      </div>
+      <div class="form-group">
+        <label>البريد الإلكتروني</label>
+        <input type="email" class="form-input" placeholder="example@gmail.com" id="regEmail" dir="ltr">
+      </div>
+      <div class="form-group">
+        <label>كلمة المرور</label>
+        <div class="input-box">
+          <input type="password" class="form-input" placeholder="6 أحرف على الأقل" id="regPassword" dir="ltr">
+          <button type="button" class="toggle-password" onclick="togglePass('regPassword',this)">👁️</button>
+        </div>
+      </div>
+      <button class="auth-btn" onclick="handleRegister()">🚀 إنشاء الحساب الآن</button>
+    </div>
+
+    <button class="guest-btn" onclick="guestLogin()">🕵️ الدخول كزائر</button>
+  </div>
+</div>
+
+<!-- ================= RESET PASSWORD MODAL ================= -->
+<div class="reset-overlay" id="resetOverlay">
+  <!-- STEP 1: Email -->
+  <div class="reset-box" id="resetEmailStep">
+    <button class="reset-close" onclick="closeReset()">×</button>
+    <div class="reset-icon">🔐</div>
+    <h2>استعادة كلمة المرور</h2>
+    <p>أدخل بريدك الإلكتروني وسنرسل لك رمز تحقق مكون من 6 أرقام.</p>
+    <div id="emailResetMessage" class="reset-message"></div>
+    <div class="form-group">
+      <label>البريد الإلكتروني</label>
+      <input type="email" id="resetEmail" class="form-input" placeholder="example@gmail.com" dir="ltr">
+    </div>
+    <button class="auth-btn" onclick="sendResetCode()">📩 إرسال رمز التحقق</button>
+    <button class="reset-back" onclick="closeReset()">العودة لتسجيل الدخول</button>
+  </div>
+
+  <!-- STEP 2: OTP -->
+  <div class="reset-box" id="resetOtpStep" style="display:none">
+    <button class="reset-close" onclick="closeReset()">×</button>
+    <div class="reset-icon">📩</div>
+    <h2>تحقق من بريدك</h2>
+    <p>تم إرسال الرمز إلى:<br><strong id="resetEmailPreview" style="color:var(--gold)"></strong></p>
+    <div id="otpMessage" class="reset-message"></div>
+    <div class="otp-container">
+      <input class="otp-input" maxlength="1" inputmode="numeric"><input class="otp-input" maxlength="1" inputmode="numeric"><input class="otp-input" maxlength="1" inputmode="numeric"><input class="otp-input" maxlength="1" inputmode="numeric"><input class="otp-input" maxlength="1" inputmode="numeric"><input class="otp-input" maxlength="1" inputmode="numeric">
+    </div>
+    <div class="otp-timer">الرمز صالح لمدة <span id="otpTimer">05:00</span></div>
+    <button class="auth-btn" onclick="verifyResetCode()">✓ تأكيد الرمز</button>
+    <button class="reset-back" onclick="resendResetCode()">إعادة إرسال الرمز</button>
+  </div>
+
+  <!-- STEP 3: New Password -->
+  <div class="reset-box" id="resetPasswordStep" style="display:none">
+    <button class="reset-close" onclick="closeReset()">×</button>
+    <div class="reset-icon">🔑</div>
+    <h2>كلمة مرور جديدة</h2>
+    <p>أنشئ كلمة مرور قوية لحسابك.</p>
+    <div id="passwordMessage" class="reset-message"></div>
+    <div class="form-group">
+      <label>كلمة المرور الجديدة</label>
+      <div class="input-box">
+        <input type="password" id="newPassword" class="form-input" placeholder="6 أحرف على الأقل" dir="ltr">
+        <button type="button" class="toggle-password" onclick="togglePass('newPassword',this)">👁️</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>تأكيد كلمة المرور</label>
+      <div class="input-box">
+        <input type="password" id="confirmPassword" class="form-input" placeholder="••••••••" dir="ltr">
+        <button type="button" class="toggle-password" onclick="togglePass('confirmPassword',this)">👁️</button>
+      </div>
+    </div>
+    <button class="auth-btn" onclick="changePassword()">🔒 حفظ كلمة المرور</button>
+  </div>
+
+  <!-- STEP 4: Success -->
+  <div class="reset-box reset-success" id="resetSuccessStep" style="display:none">
+    <div class="success-icon">✓</div>
+    <h2>تم تغيير كلمة المرور</h2>
+    <p>تم تحديث كلمة المرور بنجاح. يمكنك الآن تسجيل الدخول.</p>
+    <button class="auth-btn" onclick="finishReset()">🚀 العودة لتسجيل الدخول</button>
+  </div>
+</div>
+
+<!-- ================= MAIN APP ================= -->
+<div id="app">
+  <div class="top-bar">
+    <div class="logo-area">
+      <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--purple));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#000;border:2px solid var(--gold);box-shadow:0 0 15px var(--gold-glow)">P</div>
+      <div><div class="logo-text">PLAY200</div><div style="font-size:10px;color:var(--muted)">مرحباً، <span id="userNameDisplay">زائر</span></div></div>
+    </div>
+    <div class="coins-badge"><span>🪙</span><span id="coinDisplay">0</span></div>
+  </div>
+
+  <div class="section active" id="homeSection">
+    <div class="hero">
+      <h1>🎮 <span>PLAY200</span></h1>
+      <p>العب 10 ألعاب مختلفة، اجمع النقاط الذهبية، شارك في السحب على <strong style="color:var(--gold)">5000 درهم</strong> و <strong style="color:var(--purple)">آيفون 16</strong>!</p>
+    </div>
+    <div class="ad-banner" onclick="showRewardedAd('homeBanner')">
+      <div class="ad-label">إعلان مكافأة</div>
+      <div class="ad-text">▶️ شاهد إعلان 30 ثانية واربح +50 نقطة ذهبية</div>
+    </div>
+    <div class="section-title">⚡ تحديات اليوم</div>
+    <div id="challengesList"></div>
+  </div>
+
+  <div class="section" id="gamesSection">
+    <div class="section-title">🎮 الألعاب (<span id="gamesCount">10</span>)</div>
+    <div class="games-grid" id="gamesGrid"></div>
+  </div>
+
+  <div class="section" id="rewardsSection">
+    <div class="section-title">🎁 الجوائز والسحوبات</div>
+    <div class="reward-card featured">
+      <div class="reward-img">💰</div>
+      <h3>5000 درهم نقداً</h3>
+      <p>سحب شهري على 5000 درهم مغربي لأعلى 3 لاعبين</p>
+      <div class="ticket-cost">🎫 100 تذكرة للمشاركة</div>
+    </div>
+    <div class="reward-card featured">
+      <div class="reward-img">📱</div>
+      <h3>آيفون 16 برو ماكس</h3>
+      <p>سحب كبير كل 3 أشهر على آيفون 16 برو ماكس 256GB</p>
+      <div class="ticket-cost">🎫 500 تذكرة للمشاركة</div>
+    </div>
+    <div class="reward-card">
+      <div class="reward-img">💳</div>
+      <h3>بطاقة شحن 100 درهم</h3>
+      <p>سحب أسبوعي على 10 بطاقات شحن بقيمة 100 درهم</p>
+      <div class="ticket-cost">🎫 20 تذكرة للمشاركة</div>
+    </div>
+    <div class="card" style="margin-top:20px">
+      <div style="text-align:center">
+        <div style="font-size:14px;color:var(--muted);margin-bottom:8px">تذاكرك الحالية</div>
+        <div style="font-size:32px;font-weight:900;color:var(--gold);text-shadow:0 0 20px var(--gold-glow)">🎫 <span id="ticketDisplay">0</span></div>
+        <p style="font-size:12px;color:var(--muted);margin-top:8px">كل 100 نقطة ذهبية = 1 تذكرة سحب</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="leaderSection">
+    <div class="section-title">🏆 المتصدرون</div>
+    <div id="leaderboardList"></div>
+  </div>
+
+  <div class="section" id="profileSection">
+    <div class="card" style="text-align:center;padding:30px 20px">
+      <div style="width:80px;height:80px;border-radius:24px;background:linear-gradient(135deg,var(--gold),var(--purple));display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 14px;border:3px solid var(--gold);box-shadow:0 0 30px var(--gold-glow)">👤</div>
+      <h2 id="profileName" style="margin-bottom:4px">زائر</h2>
+      <p id="profileEmail" style="color:var(--muted);font-size:13px;margin-bottom:16px">-</p>
+      <div style="display:flex;justify-content:center;gap:16px;margin-bottom:20px">
+        <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:var(--gold)">🪙 <span id="profileCoins">0</span></div><div style="font-size:11px;color:var(--muted)">نقطة ذهبية</div></div>
+        <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:var(--purple)">🎮 <span id="profileGames">0</span></div><div style="font-size:11px;color:var(--muted)">لعبة لعبتها</div></div>
+        <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:var(--success)">🏆 <span id="profileWins">0</span></div><div style="font-size:11px;color:var(--muted)">فوز</div></div>
+      </div>
+      <div id="syncStatus" style="font-size:12px;color:var(--muted);margin-bottom:12px"></div>
+      <button onclick="syncWithServer()" style="background:var(--info);color:#fff;border:none;padding:12px 24px;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-bottom:10px">🔄 مزامنة مع السحابة</button>
+      <button onclick="logout()" style="background:var(--danger);color:#fff;border:none;padding:12px 24px;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;width:100%">تسجيل الخروج</button>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="nav-btn active" onclick="showSection('home',this)"><span class="nav-icon">🏠</span><span>الرئيسية</span></button>
+    <button class="nav-btn" onclick="showSection('games',this)"><span class="nav-icon">🎮</span><span>الألعاب</span></button>
+    <button class="nav-btn" onclick="showSection('rewards',this)"><span class="nav-icon">🎁</span><span>الجوائز</span></button>
+    <button class="nav-btn" onclick="showSection('leader',this)"><span class="nav-icon">🏆</span><span>المتصدرون</span></button>
+    <button class="nav-btn" onclick="showSection('profile',this)"><span class="nav-icon">👤</span><span>حسابي</span></button>
+  </div>
+</div>
+
+<!-- GAME OVERLAY -->
+<div class="game-overlay" id="gameOverlay">
+  <div class="game-header">
+    <h3><span id="gameIcon">🎮</span> <span id="gameTitle">اللعبة</span></h3>
+    <div class="game-score">النقاط: <span id="gameScore">0</span></div>
+  </div>
+  <div class="game-area" id="gameArea"><canvas id="gameCanvas" class="game-canvas"></canvas></div>
+  <div class="game-controls">
+    <button class="game-btn secondary" onclick="closeGame()">❌ خروج</button>
+    <button class="game-btn" onclick="restartGame()">🔄 إعادة</button>
+  </div>
+</div>
+
+<!-- AD MODAL -->
+<div class="ad-modal" id="adModal">
+  <div class="ad-box">
+    <div class="ad-visual">📺</div>
+    <h2>إعلان مكافأة</h2>
+    <p>شاهد هذا الإعلان حتى النهاية لربح <strong style="color:var(--gold)">+50 نقطة ذهبية</strong></p>
+    <div class="ad-progress"><div class="ad-progress-bar" id="adProgressBar"></div></div>
+    <button class="game-btn" id="adActionBtn" onclick="closeAd()" style="width:100%;max-width:none">جاري التحميل...</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toastIcon">✅</span><span id="toastMsg">رسالة</span></div>
+
+<script>
+// ================= API CONFIG =================
+// ⚠️ غيّر هذا الرابط لـ IP ديالك في Termux
+// مثال: const API = "http://192.168.1.45:3000/api/auth";
+const API = "http://localhost:3000/api/auth";
+const API_BASE = API.replace('/auth', '');
+
+// ================= STATE =================
+let user = {name:'زائر',email:'',coins:0,tickets:0,gamesPlayed:0,wins:0};
+let token = localStorage.getItem('play200_token') || '';
+let currentGame = null;
+let gameLoop = null;
+let canvas, ctx;
+let adTimer = null;
+let resetEmailValue = "";
+let otpExpiresAt = 0;
+let timerInterval = null;
+
+const games = [
+  {id:'snake',name:'الثعبان',icon:'🐍',points:10,desc:'كلما أكلت أكثر، زدت نقاط',locked:false},
+  {id:'tetris',name:'ترتيب الكتل',icon:'🧱',points:15,desc:'امسح الصفوف واجمع النقاط',locked:false},
+  {id:'flappy',name:'الطائر الطائر',icon:'🐦',points:12,desc:'تجنب الأنابيق واطلع بعيد',locked:false},
+  {id:'memory',name:'ذاكرة البطاقات',icon:'🃏',points:8,desc:'اطابق البطاقات المتشابهة',locked:false},
+  {id:'whack',name:'اضرب الخلد',icon:'🔨',points:10,desc:'اضرب الخلد بسرعة قبل ما يهرب',locked:false},
+  {id:'breakout',name:'كسر الطوب',icon:'🧱',points:14,desc:'اكسر كل الطوب بالكرة',locked:false},
+  {id:'dino',name:'ديناصور الصحراء',icon:'🦖',points:10,desc:'اقفز فوق الصبار واجمع النقاط',locked:false},
+  {id:'pong',name:'بينج بونج',icon:'🏓',points:12,desc:'تغلب على الكمبيوتر في التنس',locked:false},
+  {id:'xo',name:'إكس أو',icon:'⭕',points:5,desc:'تغلب على الذكاء الاصطناعي',locked:false},
+  {id:'collect',name:'جمع النقود',icon:'💰',points:15,desc:'جمع أكبر عدد من النقود الذهبية',locked:false}
+];
+
+const challenges = [
+  {id:'c1',title:'العب 3 ألعاب',desc:'شغل أي 3 ألعاب اليوم',reward:30,progress:0,target:3,icon:'🎮'},
+  {id:'c2',title:'شاهد إعلان مكافأة',desc:'شاهد إعلان واحد كامل',reward:50,progress:0,target:1,icon:'📺'},
+  {id:'c3',title:'اجمع 100 نقطة',desc:'وصل رصيدك لـ 100 نقطة',reward:20,progress:0,target:100,icon:'🪙'},
+  {id:'c4',title:'افوز في XO',desc:'تغلب على AI في لعبة XO',reward:25,progress:0,target:1,icon:'⭕'}
+];
+
+const fakeLeaderboard = [
+  {name:'أحمد المغربي',score:12850},{name:'سارة الجزائرية',score:11200},
+  {name:'خالد المصري',score:9800},{name:'نورة السعودية',score:8750},
+  {name:'يوسف التونسي',score:7200},{name:'ليلى الإماراتية',score:6500},
+  {name:'عمر السوداني',score:5400},{name:'فاطمة القطرية',score:4300}
+];
+
+// ================= INIT =================
+async function init(){
+  loadUser();
+  if(token){
+    try{
+      const res = await fetch(API_BASE + '/auth/profile', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = await res.json();
+      if(data.success){
+        user = {...user, ...data.user};
+        saveUser();
+      } else { token = ''; localStorage.removeItem('play200_token'); }
+    }catch(e){ /* offline */ }
+  }
+  renderGames(); renderChallenges(); renderLeaderboard(); updateUI();
+}
+
+function loadUser(){
+  const saved = localStorage.getItem('play200_user');
+  if(saved) user = {...user, ...JSON.parse(saved)};
+}
+function saveUser(){ localStorage.setItem('play200_user',JSON.stringify(user)); }
+
+function updateUI(){
+  document.getElementById('coinDisplay').textContent = user.coins;
+  document.getElementById('ticketDisplay').textContent = Math.floor(user.coins/100);
+  document.getElementById('userNameDisplay').textContent = user.name;
+  document.getElementById('profileName').textContent = user.name;
+  document.getElementById('profileEmail').textContent = user.email || 'زائر';
+  document.getElementById('profileCoins').textContent = user.coins;
+  document.getElementById('profileGames').textContent = user.gamesPlayed;
+  document.getElementById('profileWins').textContent = user.wins;
+  const status = document.getElementById('syncStatus');
+  if(status) status.textContent = token ? '☁️ متصل بالسحابة' : '📴 وضع عدم الاتصال';
+}
+
+// ================= AUTH TABS =================
+function switchAuthTab(tab){
+  document.querySelectorAll('.auth-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.form-panel').forEach(p=>p.classList.remove('active'));
+  if(tab==='login'){ document.querySelectorAll('.auth-tab')[0].classList.add('active'); document.getElementById('loginPanel').classList.add('active'); }
+  else { document.querySelectorAll('.auth-tab')[1].classList.add('active'); document.getElementById('registerPanel').classList.add('active'); }
+}
+
+function togglePass(id,btn){
+  const inp = document.getElementById(id);
+  if(inp.type==='password'){inp.type='text';btn.textContent='🔒';}
+  else{inp.type='password';btn.textContent='👁️';}
+}
+
+// ================= LOGIN =================
+async function handleLogin(){
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if(!email||!password){showToast('❌ أكمل جميع الحقول','error');return;}
+
+  try{
+    const res = await fetch(API + '/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,password})
+    });
+    const data = await res.json();
+    if(data.success){
+      token = data.token;
+      localStorage.setItem('play200_token', token);
+      user = {...user, ...data.user};
+      saveUser(); updateUI();
+      enterApp();
+      showToast('🎉 مرحباً بك '+user.name+'!','success');
+    } else {
+      showToast('❌ '+(data.message||'خطأ في تسجيل الدخول'),'error');
+    }
+  }catch(e){
+    showToast('❌ لا يوجد اتصال بالسيرفر','error');
+  }
+}
+
+// ================= REGISTER =================
+async function handleRegister(){
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+  if(!name||!email||!password){showToast('❌ أكمل جميع الحقول','error');return;}
+  if(password.length<6){showToast('❌ كلمة المرور 6 أحرف على الأقل','error');return;}
+
+  try{
+    const res = await fetch(API + '/register', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name,email,password})
+    });
+    const data = await res.json();
+    if(data.success){
+      token = data.token;
+      localStorage.setItem('play200_token', token);
+      user = {...user, ...data.user};
+      saveUser(); updateUI();
+      enterApp();
+      showToast('🚀 تم إنشاء الحساب! أهلاً '+name,'success');
+    } else {
+      showToast('❌ '+(data.message||'فشل إنشاء الحساب'),'error');
+    }
+  }catch(e){
+    showToast('❌ لا يوجد اتصال بالسيرفر','error');
+  }
+}
+
+// ================= GUEST =================
+function guestLogin(){
+  user.name = 'زائر ' + Math.floor(Math.random()*9999);
+  user.email = ''; token = '';
+  localStorage.removeItem('play200_token');
+  saveUser(); updateUI(); enterApp();
+  showToast('🕵️ دخلت كزائر','info');
+}
+
+function enterApp(){
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  init();
+}
+
+function logout(){
+  token = '';
+  localStorage.removeItem('play200_token');
+  localStorage.removeItem('play200_user');
+  location.reload();
+}
+
+// ================= NAVIGATION =================
+function showSection(sec,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(sec+'Section').classList.add('active');
+  if(btn) btn.classList.add('active');
+  else {
+    const map = {home:0,games:1,rewards:2,leader:3,profile:4};
+    document.querySelectorAll('.nav-btn')[map[sec]].classList.add('active');
+  }
+}
+
+// ================= RENDERERS =================
+function renderGames(){
+  const grid = document.getElementById('gamesGrid');
+  grid.innerHTML = games.map(g=>`
+    <div class="game-card ${g.locked?'locked':''}" onclick="${g.locked?'':'openGame(\''+g.id+'\')'}">
+      <div class="game-icon">${g.icon}</div>
+      <h3>${g.name}</h3>
+      <p>${g.desc}</p>
+      <div class="game-points">+${g.points} 🪙</div>
+    </div>
+  `).join('');
+}
+function renderChallenges(){
+  const list = document.getElementById('challengesList');
+  list.innerHTML = challenges.map(c=>`
+    <div class="challenge-item">
+      <div class="challenge-icon">${c.icon}</div>
+      <div class="challenge-info">
+        <h4>${c.title}</h4>
+        <p>${c.desc} (${c.progress}/${c.target})</p>
+      </div>
+      <div class="challenge-reward">+${c.reward} 🪙</div>
+    </div>
+  `).join('');
+}
+function renderLeaderboard(){
+  const list = document.getElementById('leaderboardList');
+  const sorted = [...fakeLeaderboard,{name:user.name,score:user.coins}].sort((a,b)=>b.score-a.score);
+  list.innerHTML = sorted.slice(0,10).map((p,i)=>`
+    <div class="leader-row ${i===0?'top1':i===1?'top2':i===2?'top3':''}">
+      <div class="leader-rank">${i+1}</div>
+      <div class="leader-name">${p.name} ${p.name===user.name?'(أنت)':''}</div>
+      <div class="leader-score">${p.score.toLocaleString()} 🪙</div>
+    </div>
+  `).join('');
+}
+
+// ================= TOAST =================
+function showToast(msg,type='success'){
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  document.getElementById('toastIcon').textContent = type==='success'?'✅':type==='error'?'❌':'ℹ️';
+  t.className = 'toast show ' + type;
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ================= SYNC WITH SERVER =================
+async function syncWithServer(){
+  if(!token){showToast('❌ سجل الدخول أولاً','error');return;}
+  try{
+    const res = await fetch(API_BASE + '/auth/update', {
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({coins:user.coins,gamesPlayed:user.gamesPlayed,wins:user.wins})
+    });
+    const data = await res.json();
+    if(data.success){
+      showToast('☁️ تمت المزامنة مع السحابة','success');
+    } else {
+      showToast('❌ فشلت المزامنة','error');
+    }
+  }catch(e){
+    showToast('❌ لا يوجد اتصال بالسيرفر','error');
+  }
+}
+
+// ================= RESET PASSWORD =================
+function openReset(e){ if(e) e.preventDefault(); document.getElementById('resetOverlay').classList.add('active'); showResetStep('resetEmailStep'); document.getElementById('resetEmail').value=''; clearResetMessage('emailResetMessage'); }
+function closeReset(){ document.getElementById('resetOverlay').classList.remove('active'); clearInterval(timerInterval); }
+function showResetStep(stepId){
+  ['resetEmailStep','resetOtpStep','resetPasswordStep','resetSuccessStep'].forEach(id=>{
+    document.getElementById(id).style.display = (id===stepId)?'block':'none';
+  });
+}
+function showMessage(id,text,type){
+  const box=document.getElementById(id); box.textContent=text; box.className='reset-message '+type;
+}
+function clearResetMessage(id){
+  const box=document.getElementById(id); box.textContent=''; box.className='reset-message';
+}
+
+async function sendResetCode(){
+  const email = document.getElementById('resetEmail').value.trim();
+  if(!email||!email.includes('@')||!email.includes('.')){showMessage('emailResetMessage','⚠️ أدخل بريد صحيح','error');return;}
+  resetEmailValue = email;
+  try{
+    const res = await fetch(API + '/send-code', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email})
+    });
+    const data = await res.json();
+    if(data.success){
+      document.getElementById('resetEmailPreview').textContent = resetEmailValue;
+      clearOtpInputs(); showResetStep('resetOtpStep');
+      otpExpiresAt = Date.now() + (5*60*1000); startOtpTimer();
+    } else { showMessage('emailResetMessage','❌ '+(data.message||'فشل الإرسال'),'error'); }
+  }catch(e){ showMessage('emailResetMessage','❌ لا يوجد اتصال بالسيرفر','error'); }
+}
+
+function startOtpTimer(){
+  clearInterval(timerInterval);
+  function updateTimer(){
+    const remaining = Math.max(0, otpExpiresAt - Date.now());
+    const totalSeconds = Math.floor(remaining/1000);
+    const minutes = Math.floor(totalSeconds/60);
+    const seconds = totalSeconds%60;
+    document.getElementById('otpTimer').textContent = String(minutes).padStart(2,'0')+':'+String(seconds).padStart(2,'0');
+    if(remaining<=0){clearInterval(timerInterval); document.getElementById('otpTimer').textContent='انتهت الصلاحية';}
+  }
+  updateTimer(); timerInterval = setInterval(updateTimer,1000);
+}
+
+async function verifyResetCode(){
+  const code = [...document.querySelectorAll('.otp-input')].map(i=>i.value).join('');
+  if(code.length!==6){showMessage('otpMessage','⚠️ أدخل 6 أرقام','error');return;}
+  try{
+    const res = await fetch(API + '/verify-code', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:resetEmailValue,code})
+    });
+    const data = await res.json();
+    if(data.success){clearInterval(timerInterval); clearResetMessage('otpMessage'); showResetStep('resetPasswordStep');}
+    else {showMessage('otpMessage','❌ '+(data.message||'رمز غير صحيح'),'error');}
+  }catch(e){showMessage('otpMessage','❌ خطأ في الاتصال','error');}
+}
+
+function resendResetCode(){ if(!resetEmailValue){showResetStep('resetEmailStep');return;} document.getElementById('resetEmail').value=resetEmailValue; sendResetCode(); }
+function clearOtpInputs(){ document.querySelectorAll('.otp-input').forEach(i=>i.value=''); }
+
+async function changePassword(){
+  const password = document.getElementById('newPassword').value;
+  const confirm = document.getElementById('confirmPassword').value;
+  if(password.length<6){showMessage('passwordMessage','⚠️ 6 أحرف على الأقل','error');return;}
+  if(password!==confirm){showMessage('passwordMessage','❌ كلمتا المرور غير متطابقتين','error');return;}
+  try{
+    const res = await fetch(API + '/reset-password', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:resetEmailValue,newPassword:password})
+    });
+    const data = await res.json();
+    if(data.success){clearResetMessage('passwordMessage'); showResetStep('resetSuccessStep');}
+    else {showMessage('passwordMessage','❌ '+(data.message||'فشل التغيير'),'error');}
+  }catch(e){showMessage('passwordMessage','❌ خطأ في الاتصال','error');}
+}
+
+function finishReset(){ closeReset(); switchAuthTab('login'); document.getElementById('loginPassword').value=''; }
+
+// OTP UX
+document.addEventListener('input', function(e){
+  const input = e.target;
+  if(!input.classList.contains('otp-input')) return;
+  input.value = input.value.replace(/\D/g,'');
+  if(input.value.length===1){ const next=input.nextElementSibling; if(next) next.focus(); }
+});
+document.addEventListener('keydown', function(e){
+  const input = e.target;
+  if(!input.classList.contains('otp-input')) return;
+  if(e.key==='Backspace' && input.value===''){ const prev=input.previousElementSibling; if(prev) prev.focus(); }
+});
+
+// ================= ADS =================
+function showRewardedAd(source){
+  const modal = document.getElementById('adModal');
+  const bar = document.getElementById('adProgressBar');
+  const btn = document.getElementById('adActionBtn');
+  modal.classList.add('active');
+  bar.style.width = '0%';
+  btn.textContent = 'جاري عرض الإعلان...';
+  btn.disabled = true; btn.style.opacity = '0.5';
+  let progress = 0;
+  adTimer = setInterval(()=>{
+    progress += 2;
+    bar.style.width = progress + '%';
+    if(progress >= 100){
+      clearInterval(adTimer);
+      btn.textContent = '✅ استلام المكافأة (+50)';
+      btn.disabled = false; btn.style.opacity = '1';
+      btn.onclick = ()=>{
+        user.coins += 50; updateUI(); saveUser(); closeAd();
+        showToast('🎉 ربحت 50 نقطة ذهبية!','success');
+        if(source==='homeBanner'){challenges[1].progress=Math.min(challenges[1].progress+1,1);renderChallenges();}
+      };
+    }
+  },60);
+}
+function closeAd(){ clearInterval(adTimer); document.getElementById('adModal').classList.remove('active'); }
+
+// ================= GAME ENGINE =================
+function openGame(id){
+  currentGame = id;
+  const g = games.find(x=>x.id===id);
+  document.getElementById('gameIcon').textContent = g.icon;
+  document.getElementById('gameTitle').textContent = g.name;
+  document.getElementById('gameScore').textContent = '0';
+  document.getElementById('gameOverlay').classList.add('active');
+  canvas = document.getElementById('gameCanvas');
+  ctx = canvas.getContext('2d');
+  const area = document.getElementById('gameArea');
+  const size = Math.min(area.clientWidth-20, area.clientHeight-20, 400);
+  canvas.width = size; canvas.height = size;
+  user.gamesPlayed++; saveUser(); updateUI();
+  if(id==='snake') startSnake();
+  else if(id==='tetris') startTetris();
+  else if(id==='flappy') startFlappy();
+  else if(id==='memory') startMemory();
+  else if(id==='whack') startWhack();
+  else if(id==='breakout') startBreakout();
+  else if(id==='dino') startDino();
+  else if(id==='pong') startPong();
+  else if(id==='xo') startXO();
+  else if(id==='collect') startCollect();
+}
+function closeGame(){
+  if(gameLoop) cancelAnimationFrame(gameLoop);
+  clearInterval(gameLoop);
+  document.getElementById('gameOverlay').classList.remove('active');
+  currentGame = null; document.onkeydown = null;
+}
+function restartGame(){ closeGame(); openGame(currentGame); }
+function endGame(score){
+  const g = games.find(x=>x.id===currentGame);
+  const earned = Math.max(1, Math.floor(score * g.points / 10));
+  user.coins += earned; saveUser(); updateUI();
+  showToast('🏆 انتهت اللعبة! ربحت '+earned+' نقطة','success');
+  challenges[0].progress = Math.min(challenges[0].progress+1,3);
+  challenges[2].progress = Math.min(user.coins,100);
+  renderChallenges(); renderLeaderboard();
+  // Auto sync if logged in
+  if(token) syncWithServer();
+}
+
+// ================= SNAKE =================
+function startSnake(){
+  const s = canvas.width, gs = 20;
+  let snake = [{x:5,y:5}], food = {x:10,y:10}, dir = {x:1,y:0}, nextDir = {x:1,y:0}, score = 0, speed = 150, lastTime = 0;
+  function placeFood(){ food = {x:Math.floor(Math.random()*(s/gs)),y:Math.floor(Math.random()*(s/gs))}; }
+  function update(time){
+    gameLoop = requestAnimationFrame(update);
+    if(time - lastTime < speed) return;
+    lastTime = time;
+    dir = nextDir;
+    const head = {x:snake[0].x+dir.x, y:snake[0].y+dir.y};
+    if(head.x<0||head.x>=s/gs||head.y<0||head.y>=s/gs||snake.some(seg=>seg.x===head.x&&seg.y===head.y)){cancelAnimationFrame(gameLoop);endGame(score);return;}
+    snake.unshift(head);
+    if(head.x===food.x && head.y===food.y){score+=10;placeFood();speed=Math.max(80,speed-3);}
+    else snake.pop();
+    document.getElementById('gameScore').textContent = score;
+    ctx.fillStyle = '#0f0f14'; ctx.fillRect(0,0,s,s);
+    ctx.strokeStyle = '#1a1a24';
+    for(let i=0;i<s/gs;i++){ctx.beginPath();ctx.moveTo(i*gs,0);ctx.lineTo(i*gs,s);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i*gs);ctx.lineTo(s,i*gs);ctx.stroke();}
+    ctx.fillStyle = '#f0c400'; ctx.shadowColor = 'rgba(240,196,0,.5)'; ctx.shadowBlur = 15;
+    ctx.beginPath(); ctx.arc(food.x*gs+gs/2,food.y*gs+gs/2,gs/2-2,0,Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
+    snake.forEach((seg,i)=>{
+      ctx.fillStyle = i===0?'#2ed573':'#26af61';
+      ctx.fillRect(seg.x*gs+1,seg.y*gs+1,gs-2,gs-2);
+      if(i===0){ctx.fillStyle='#fff';ctx.fillRect(seg.x*gs+5,seg.y*gs+5,3,3);ctx.fillRect(seg.x*gs+12,seg.y*gs+5,3,3);}
+    });
+  }
+  document.onkeydown = e=>{
+    if(e.key==='ArrowUp'&&dir.y===0) nextDir={x:0,y:-1};
+    if(e.key==='ArrowDown'&&dir.y===0) nextDir={x:0,y:1};
+    if(e.key==='ArrowLeft'&&dir.x===0) nextDir={x:-1,y:0};
+    if(e.key==='ArrowRight'&&dir.x===0) nextDir={x:1,y:0};
+  };
+  let tx,ty;
+  canvas.ontouchstart = e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;};
+  canvas.ontouchend = e=>{
+    const dx = e.changedTouches[0].clientX - tx;
+    const dy = e.changedTouches[0].clientY - ty;
+    if(Math.abs(dx)>Math.abs(dy)){if(dx>0&&dir.x===0)nextDir={x:1,y:0};else if(dx<0&&dir.x===0)nextDir={x:-1,y:0};}
+    else{if(dy>0&&dir.y===0)nextDir={x:0,y:1};else if(dy<0&&dir.y===0)nextDir={x:0,y:-1};}
+  };
+  gameLoop = requestAnimationFrame(update);
+}
+
+// ================= TETRIS =================
+function startTetris(){
+  const cols=10,rows=20,bs=canvas.width/cols;
+  let board = Array(rows).fill().map(()=>Array(cols).fill(0));
+  let piece = null, score=0, dropTime=0;
+  const shapes = [[[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]]];
+  const colors = ['#ff4757','#ff9f0a','#f0c400','#2ed573','#1e90ff','#a855f7','#ff6b81'];
+  function newPiece(){ const i = Math.floor(Math.random()*shapes.length); piece = {shape:shapes[i],color:colors[i],x:3,y:0}; }
+  function rotate(){ const r = piece.shape[0].map((_,i)=>piece.shape.map(row=>row[i]).reverse()); if(!collision(r,piece.x,piece.y)) piece.shape = r; }
+  function collision(s,x,y){ for(let r=0;r<s.length;r++)for(let c=0;c<s[r].length;c++) if(s[r][c] && (x+c<0||x+c>=cols||y+r>=rows||board[y+r]?.[x+c])) return true; return false; }
+  function merge(){ piece.shape.forEach((r,ri)=>r.forEach((c,ci)=>{if(c)board[piece.y+ri][piece.x+ci]=piece.color;})); }
+  function clearLines(){ let cleared=0; for(let r=rows-1;r>=0;r--){ if(board[r].every(c=>c)){ board.splice(r,1); board.unshift(Array(cols).fill(0)); cleared++; r++; } } if(cleared){score+=cleared*100*cleared;} }
+  newPiece();
+  function update(time){
+    gameLoop = requestAnimationFrame(update);
+    if(time-dropTime < 500){draw();return;}
+    dropTime = time;
+    if(!collision(piece.shape,piece.x,piece.y+1)) piece.y++;
+    else{ merge(); clearLines(); newPiece(); if(collision(piece.shape,piece.x,piece.y)){cancelAnimationFrame(gameLoop);endGame(score);return;} }
+    document.getElementById('gameScore').textContent = score;
+  }
+  function draw(){
+    ctx.fillStyle='#0f0f14';ctx.fillRect(0,0,canvas.width,canvas.height);
+    board.forEach((r,ri)=>r.forEach((c,ci)=>{ if(c){ ctx.fillStyle=c; ctx.fillRect(ci*bs,ri*bs,bs-1,bs-1); } }));
+    if(piece) piece.shape.forEach((r,ri)=>r.forEach((c,ci)=>{ if(c){ ctx.fillStyle=piece.color; ctx.fillRect((piece.x+ci)*bs,(piece.y+ri)*bs,bs-1,bs-1); } }));
+  }
+  document.onkeydown = e=>{
+    if(e.key==='ArrowLeft'&&!collision(piece.shape,piece.x-1,piece.y))piece.x--;
+    if(e.key==='ArrowRight'&&!collision(piece.shape,piece.x+1,piece.y))piece.x++;
+    if(e.key==='ArrowDown'&&!collision(piece.shape,piece.x,piece.y+1))piece.y++;
+    if(e.key==='ArrowUp')rotate();
+  };
+  gameLoop = requestAnimationFrame(update);
+}
+
+// ================= FLAPPY BIRD =================
+function startFlappy(){
+  let bird={x:50,y:canvas.height/2,vy:0}, pipes=[], score=0, frame=0;
+  const gravity=0.5, jump=-8, gap=100, speed=2;
+  function update(){
+    gameLoop = requestAnimationFrame(update);
+    frame++; bird.vy += gravity; bird.y += bird.vy;
+    if(frame%100===0){ const h = Math.random()*(canvas.height-gap-100)+50; pipes.push({x:canvas.width,y:h,passed:false}); }
+    pipes.forEach(p=>{
+      p.x -= speed;
+      if(!p.passed && p.x+40<bird.x){p.passed=true;score+=10;}
+      if(p.x<bird.x+20 && p.x+40>bird.x && (bird.y<p.y || bird.y+20>p.y+gap)){endGame(score);cancelAnimationFrame(gameLoop);return;}
+    });
+    pipes = pipes.filter(p=>p.x>-50);
+    if(bird.y>canvas.height-20 || bird.y<0){endGame(score);cancelAnimationFrame(gameLoop);return;}
+    document.getElementById('gameScore').textContent = score;
+    ctx.fillStyle='#0f0f14';ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#f0c400';ctx.beginPath();ctx.arc(bird.x+10,bird.y+10,10,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#fff';ctx.fillRect(bird.x+12,bird.y+6,4,4);
+    ctx.fillStyle='#2ed573';
+    pipes.forEach(p=>{ctx.fillRect(p.x,0,40,p.y);ctx.fillRect(p.x,p.y+gap,40,canvas.height-p.y-gap);});
+  }
+  function doJump(){bird.vy=jump;}
+  document.onkeydown = e=>{if(e.code==='Space')doJump();};
+  canvas.onclick = doJump;
+  canvas.ontouchstart = e=>{e.preventDefault();doJump();};
+  gameLoop = requestAnimationFrame(update);
+}
+
+// ================= MEMORY =================
+function startMemory(){
+  const emojis = ['🦁','🐯','🐻','🐨','🐼','🐸','🐙','🦄'];
+  const cards = [...emojis,...emojis].sort(()=>Math.random()-0.5);
+  let flipped=[],matched=0,score=0,canClick=true;
+  const cols=4,rows=4, w=canvas.width/cols, h=canvas.height/rows;
+  function draw(){
+    ctx.fillStyle='#0f0f14';ctx.fillRect(0,0,canvas.width,canvas.height);
+    for(let i=1;i<3;i++){ctx.strokeStyle='#333';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(i*w,0);ctx.lineTo(i*w,canvas.height);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i*h);ctx.lineTo(canvas.width,i*h);ctx.stroke();}
+    cards.forEach((c,i)=>{
+      const x=(i%cols)*w, y=Math.floor(i/cols)*h;
+      const isFlipped=flipped.includes(i)||matched.includes(i);
+      ctx.fillStyle=isFlipped?'#1a1a24':'#252530';
+      ctx.fillRect(x+4,y+4,w-8,h-8);
+      ctx.strokeStyle=isFlipped?'#f0c400':'#333'; ctx.lineWidth=2; ctx.strokeRect(x+4,y+4,w-8,h-8);
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      if(isFlipped){ctx.fillStyle='#fff';ctx.font=`${w/2}px Arial`;ctx.fillText(c,x+w/2,y+h/2);}
+      else{ctx.fillStyle='#444';ctx.font=`${w/3}px Arial`;ctx.fillText('?',x+w/2,y+h/2);}
+    });
+  }
+  canvas.onclick = e=>{
+    if(!canClick) return;
+    const rect=canvas.getBoundingClientRect();
+    const cx=(e.clientX-rect.left)*(canvas.width/rect.width);
+    const cy=(e.clientY-rect.top)*(canvas.height/rect.height);
+    const ci=Math.floor(cx/w)+Math.floor(cy/h)*cols;
+    if(flipped.includes(ci)||matched.includes(ci)) return;
+    flipped.push(ci);draw();
+    if(flipped.length===2){
+      canClick=false;
+      if(cards[flipped[0]]===cards[flipped[1]]){
+        matched.push(...flipped);score+=50;flipped=[];canClick=true;
+        if(matched.length===cards.length){setTimeout(()=>endGame(score),500);}
+      }else{ setTimeout(()=>{flipped=[];draw();canClick=true;},800); }
+      document.getElementById('gameScore').textContent = score;
+    }
+  };
+  draw(); gameLoop = setInterval(draw,100);
+}
+
+// ================= WHACK A MOLE =================
+function startWhack(){
+  let score=0,time=30,active=-1;
+  const holes=9, w=canvas.width/3, h=canvas.height/3;
+  function draw(){
+    ctx.fillStyle='#0f0f14';ctx.fillRect(0,0,canvas.width,canvas.height);
+    for(let i=0;i<holes;i++){
+      const x=(i%3)*w, y=Math.floor(i/3)*h;
+      ctx.fillStyle='#1a1200';ctx.beginPath();ctx.arc(x+w/2,y+h/2+10,w/3,0,Math.PI*2);ctx.fill();
+      if(i===active){
+        ctx.fillStyle='#8B4513';ctx.beginPath();ctx.arc(x+w/2,y+h/2-10,w/3-5,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#fff';ctx.fillRect(x+w/2-6,y+h/2-18,4,4);ctx.fillRect(x+w/2+2,y+h/2-18,4,4);
+      }
+    }
+    document.getElementById('gameScore').textContent = score;
+  }
+  canvas.onclick = e=>{
+    const rect=canvas.getBoundingClientRect();
+    const cx=(e.clientX-rect.left)*(canvas.width/rect.width);
+    const cy=(e.clientY-rect.top)*(canvas.height/rect.height);
+    const ci=Math.floor(cx/w)+Math.floor(cy/h)*3;
+    if(ci===active){score+=10;active=-1;}
+  };
+  const moleTimer = setInterval(()=>{ active=Math.floor(Math.random()*holes); setTimeout(()=>{if(active!==-1)active=-1;},700); },1000);
+  const gameTimer = setInterval(()=>{ time--;if(time<=0){clearInterval(moleTimer);clearInterval(gameTimer);endGame(score);} },1000);
+  gameLoop = setInterval(draw,50);
+}
+
+// ================= BREAKOUT =================
+function startBreakout(){
+  let paddle={x:canvas.width/2-40,y:canvas.height-30,w:80,h:10};
+  let ball={x:canvas.width/2,y:canvas.height/2,dx:4,dy:-4,r:6};
+  let bricks=[]; const rows=5,cols=8,bw=canvas.width/cols,bh=20;
+  let score=0;
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)
+    bricks.push({x:c*bw,y:r*bh+40,w:bw-4,h:bh-4,hits:1,color:['#ff4757','#ff9f0a','#f0c400','#2ed573','#1e90ff'][r]});
+  function update(){
+    gameLoop = requestAnimationFrame(update);
+    ball.x+=ball.dx;ball.y+=ball.dy;
+    if(ball.x<ball.r||ball.x>canvas.width-ball.r)ball.dx=-ball.dx;
+    if(ball.y<ball.r)ball.dy=-ball.dy;
+    if(ball.y>canvas.height){endGame(score);cancelAnimationFrame(gameLoop);return;}
+    if(ball.y+ball.r>paddle.y&&ball.x>paddle.x&&ball.x<paddle.x+paddle.w)ball.dy=-Math.abs(ball.dy);
+    bricks.forEach(b=>{
+      if(b.hits&&ball.x>b.x&&ball.x<b.x+b.w&&ball.y>b.y&&ball.y<b.y+b.h){b.hits=0;ball.dy=-ball.dy;score+=10;}
+    });
+    if(bricks.every(b=>!b.hits)){endGame(score+100);cancelAnimationFrame(gameLoop);return;}
+    document.getElementById('gameScore').textContent = score;
+    ctx.fillStyle='#0f0f14';ctx.fillRect(0,0,canvas.width,canvas.height);
+    bricks.forEach(b=>{if(b.hits){ctx.fillStyle=b.color;ctx.fillRect(b.x,b.y,b.w,b.h);}});
+    ctx.fillStyle='#f0c400';ctx.fillRect(paddle.x,paddle.y,paddle.w,paddle.h);
+    ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+  }
+  canvas.onmousemove = e=>{
+    const rect=canvas.getBoundingClientRect();
+    paddle.x=(e.clientX-rect.left)*(canvas.width/rect.width)-paddle.w/2;
+  };
+  canvas.ontouchmove = e=>{
+    const rect=canvas.getBoundingClientRect();
+    paddle.x=(e.touches[0].clientX-rect.left)*(canvas.width/rect.width)-paddle.w/2;
+    e.preventDefault();
+  };
+  gameLoop = requestAnimationFrame(update);
+}
+
+// ================= DINO RUN =================
+function startDino(){
+  let dino={x:50,y:canvas.height-60,w:30,h:40,vy:0,ground:canvas.height-60,jumping:false};
+  let cacti=[],score=0,speed=5,frame=0;
+  function update(){
+    gameLoop = requestAnimationFrame(update);
+    frame++;
+    dino.vy+=0.8; dino.y+=dino.vy;
+    if(dino.y>dino.ground){dino.y=dino.ground;dino.vy=0;dino.jumping=false;}
+    if(frame%80===0) cacti.push({x:canvas.width,y:dino.ground-30,w:20,h:40});
+    cacti.forEach(c=>{c.x-=speed;
+      if(c.x<dino.x+dino.w && c.x+c.w>dino.x && dino.y+dino.h>c.y){endGame(score);cancelAnimationFrame(gameLoop);return;}
+    });
+    cacti=cacti.filter(c=>c.x>-30);
+    if(frame%10===0) score++;
+    document.getElementById('gameScore').textContent = score;
+    ctx.fillStyle='#0f0f14';ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#2ed573';ctx.fillRect(dino.x,dino.y,dino.w,dino.h);
+    ctx.fillStyle='#f0c400';ctx.fillRect(dino.x+5,dino.y+5,5,5);ctx.fillRect(dino.x+18,dino.y+5,5,5);
+    ctx.fillStyle='#ff4757';
+    cacti.forEach(c=>{ctx.fillRect(c.x,c.y,c.w,c.h);});
+    ctx.fillStyle='#1a1a24';ctx.fillRect(0,canvas.height-20,canvas.width,20);
+  }
+  function jump(){if(!dino.jumping){dino.vy=-14;dino.jumping=true;}}
+  document.onkeydown = e=>{if(e.code==='Space'||e.key==='ArrowUp')jump();};
+  canvas.onclick = jump;
+  canvas.ontouchstart = e=>{e.preventDefault();jump();};
+  gameLoop = requestAnimationFrame(update);
+}
+
+// ================= PONG =================
+function startPong(){
+  let ball={x:canvas.width/2,y:canvas.height/2,dx:5,dy:3,r:8};
+  let player={x:10,y:canvas.height/2-40,w:10,h:80,score:0};
+  let ai={x:canvas.width-20,y:canvas.height/2-40,w:10,h:80,score:0};
+  let score=0;
+  function update(){
+    gameLoop = requestAnimationFrame(update);
+    ball.x+=ball.dx;ball.y+=ball.dy;
+    if(ball.y<ball.r||ball.y>canvas.height-ball.r)ball.dy=-ball.dy;
+    if(ball.x<player.x+player.w && ball.y>player.y && ball.y<player.y+player.h){ball.dx=Math.abs(ball.dx);score+=10;}
+    if(ball.x>ai.x && ball.y>ai.y && ball.y<ai.y+ai.h){ball.dx=-Math.abs(ball.dx);}
+    if(ball.x<0){ai.score++;ball.x=canvas.width/2;ball.y=canvas.height/2;}
+    if(ball.x>canvas.width){player.score++;score+=50;ball.x=canvas.width/2;ball.y=canvas.height/2;}
+    ai.y += (ball.y - (ai.y+ai.h/2))*0.08;
+    document.getElementById('gameScore').textContent = score;
+    ctx.fillStyle='#0f0f14';ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#f0c400';ctx.fillRect(player.x,player.y,player.w,player.h);
+    ctx.fillStyle='#ff4757';ctx.fillRect(ai.x,ai.y,ai.w,ai.h);
+    ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.1)';ctx.fillRect(canvas.width/2-1,0,2,canvas.height);
+  }
+  canvas.onmousemove = e=>{
+    const rect=canvas.getBoundingClientRect();
+    player.y=(e.clientY-rect.top)*(canvas.height/rect.height)-player.h/2;
+  };
+  canvas.ontouchmove = e=>{
+    const rect=canvas.getBoundingClientRect();
+    player.y=(e.touches[0].clientY-rect.top)*(canvas.height/rect.height)-player.h/2;
+    e.preventDefault();
+  };
+  gameLoop = requestAnimationFrame(update);
+}
+
+// ================= XO (TIC TAC TOE) =================
+function startXO(){
+  let board=['','','','','','','','',''];
+  let current='X', gameOver=false, score=0;
+  const w=canvas.width/3, h=canvas.height/3;
+  function draw(){
+    ctx.fillStyle='#0f0f14';ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.strokeStyle='#333';ctx.lineWidth=3;
+    for(let i=1;i<3;i++){ctx.beginPath();ctx.moveTo(i*w,0);ctx.lineTo(i*w,canvas.height);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i*h);ctx.lineTo(canvas.width,i*h);ctx.stroke();}
+    board.forEach((cell,i)=>{
+      const x=(i%3)*w, y=Math.floor(i/3)*h;
+      if(cell==='X'){ctx.strokeStyle='#f0c400';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(x+20,y+20);ctx.lineTo(x+w-20,y+h-20);ctx.stroke();ctx.beginPath();ctx.moveTo(x+w-20,y+20);ctx.lineTo(x+20,y+h-20);ctx.stroke();}
+      if(cell==='O'){ctx.strokeStyle='#ff4757';ctx.lineWidth=5;ctx.beginPath();ctx.arc(x+w/2,y+h/2,w/3,0,Math.PI*2);ctx.stroke();}
+    });
+  }
+  function checkWin(b,p){ const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]; return wins.some(c=>c.every(i=>b[i]===p)); }
+  function aiMove(){
+    let best=-1, bestScore=-Infinity;
+    for(let i=0;i<9;i++) if(!board[i]){ board[i]='O'; let s=minimax(board,false); board[i]=''; if(s>bestScore){bestScore=s;best=i;} }
+    if(best!==-1){board[best]='O'; if(checkWin(board,'O')){gameOver=true;setTimeout(()=>endGame(score),500);return;} current='X';}
+  }
+  function minimax(b, isMax){ if(checkWin(b,'O'))return 1; if(checkWin(b,'X'))return -1; if(b.every(c=>c))return 0; if(isMax){let best=-Infinity;for(let i=0;i<9;i++)if(!b[i]){b[i]='O';best=Math.max(best,minimax(b,false));b[i]='';}return best;} else{let best=Infinity;for(let i=0;i<9;i++)if(!b[i]){b[i]='X';best=Math.min(best,minimax(b,true));b[i]='';}return best;} }
+  canvas.onclick = e=>{
+    if(gameOver||current!=='X') return;
+    const rect=canvas.getBoundingClientRect();
+    const cx=(e.clientX-rect.left)*(canvas.width/rect.width);
+    const cy=(e.clientY-rect.top)*(canvas.height/rect.height);
+    const ci=Math.floor(cx/w)+Math.floor(cy/h)*3;
+    if(board[ci]) return;
+    board[ci]='X'; score+=5;
+    if(checkWin(board,'X')){gameOver=true;user.wins++;saveUser();updateUI();challenges[3].progress=1;renderChallenges();setTimeout(()=>endGame(score+100),500);return;}
+    if(board.every(c=>c)){gameOver=true;setTimeout(()=>endGame(score),500);return;}
+    current='O'; draw(); setTimeout(aiMove,400);
+    document.getElementById('gameScore').textContent = score;
+  };
+  draw(); gameLoop = setInterval(draw,100);
+}
+
+// ================= COLLECT COINS =================
+function startCollect(){
+  let player={x:canvas.width/2,y:canvas.height/2,r:15,speed:4};
+  let coins=[], score=0, time=30, frame=0;
+  function update(){
+    gameLoop = requestAnimationFrame(update);
+    frame++;
+    if(frame%40===0) coins.push({x:Math.random()*(canvas.width-20)+10,y:Math.random()*(canvas.height-20)+10,r:8});
+    coins.forEach((c,i)=>{
+      const dx=player.x-c.x, dy=player.y-c.y, dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist<player.r+c.r){coins.splice(i,1);score+=15;}
+    });
+    if(frame%60===0){time--;if(time<=0){endGame(score);cancelAnimationFrame(gameLoop);return;}}
+    document.getElementById('gameScore').textContent = score;
+    ctx.fillStyle='#0f0f14';ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#f0c400';ctx.beginPath();ctx.arc(player.x,player.y,player.r,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#fff';ctx.fillRect(player.x-3,player.y-3,2,2);ctx.fillRect(player.x+1,player.y-3,2,2);
+    coins.forEach(c=>{ctx.fillStyle='#f0c400';ctx.shadowColor='rgba(240,196,0,.5)';ctx.shadowBlur=10;ctx.beginPath();ctx.arc(c.x,c.y,c.r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;});
+  }
+  let keys={};
+  document.onkeydown = e=>{keys[e.key]=true;};
+  document.onkeyup = e=>{keys[e.key]=false;};
+  function movePlayer(){
+    if(keys['ArrowUp']||keys['w']) player.y-=player.speed;
+    if(keys['ArrowDown']||keys['s']) player.y+=player.speed;
+    if(keys['ArrowLeft']||keys['a']) player.x-=player.speed;
+    if(keys['ArrowRight']||keys['d']) player.x+=player.speed;
+    player.x=Math.max(player.r,Math.min(canvas.width-player.r,player.x));
+    player.y=Math.max(player.r,Math.min(canvas.height-player.r,player.y));
+    requestAnimationFrame(movePlayer);
+  }
+  movePlayer();
+  canvas.ontouchmove = e=>{
+    const rect=canvas.getBoundingClientRect();
+    player.x=(e.touches[0].clientX-rect.left)*(canvas.width/rect.width);
+    player.y=(e.touches[0].clientY-rect.top)*(canvas.height/rect.height);
+    e.preventDefault();
+  };
+  gameLoop = requestAnimationFrame(update);
+}
+
+// ================= AUTO LOGIN CHECK =================
+if(token){
+  enterApp();
+} else {
+  document.getElementById('authScreen').style.display = 'flex';
+}
+</script>
+</body>
+</html>
