@@ -391,11 +391,7 @@ body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--bg
 
 <script>
 // ================= API CONFIG =================
-// ⚠️ غيّر هذا الرابط لـ IP ديالك في Termux
-// مثال: const API = "http://192.168.1.45:3000/api/auth";
-const API = "http://localhost:3000/api/auth";
-const API_BASE = API.replace('/auth', '');
-
+const API_BASE = "https://play200-production.up.railway.app";
 // ================= STATE =================
 let user = {name:'زائر',email:'',coins:0,tickets:0,gamesPlayed:0,wins:0};
 let token = localStorage.getItem('play200_token') || '';
