@@ -402,6 +402,9 @@ let adTimer = null;
 let resetEmailValue = "";
 let otpExpiresAt = 0;
 let timerInterval = null;
+let gameTimers = [];
+let gameRaf = null;
+let gameEnded = false;
 
 const games = [
   {id:'snake',name:'الثعبان',icon:'🐍',points:10,desc:'كلما أكلت أكثر، زدت نقاط',locked:false},
@@ -442,7 +445,7 @@ async function init(){
       if(data.success){
         user = {...user, ...data.user};
         saveUser();
-      } else { token = ''; localStorage.removeItem('play200_token'); }
+      } else { token = ''; localStorage.removeItem('play200_token'); document.getElementById('app').style.display='none'; document.getElementById('authScreen').style.display='flex'; }
     }catch(e){ /* offline */ }
   }
   renderGames(); renderChallenges(); renderLeaderboard(); updateUI();
@@ -741,7 +744,7 @@ function showRewardedAd(source){
   btn.disabled = true; btn.style.opacity = '0.5';
   let progress = 0;
   adTimer = setInterval(()=>{
-    progress += 2;
+    progress += 100/300;
     bar.style.width = progress + '%';
     if(progress >= 100){
       clearInterval(adTimer);
@@ -750,10 +753,10 @@ function showRewardedAd(source){
       btn.onclick = ()=>{
         user.coins += 50; updateUI(); saveUser(); closeAd();
         showToast('🎉 ربحت 50 نقطة ذهبية!','success');
-        if(source==='homeBanner'){challenges[1].progress=Math.min(challenges[1].progress+1,1);renderChallenges();}
+        if(source==='homeBanner' && challenges[1].progress < 1){challenges[1].progress=1; user.coins += challenges[1].reward; saveUser(); updateUI(); renderChallenges(); showToast('🎯 اكتمل تحدي الإعلان +50','success');}
       };
     }
-  },60);
+  },100);
 }
 function closeAd(){ clearInterval(adTimer); document.getElementById('adModal').classList.remove('active'); }
 
@@ -782,21 +785,29 @@ function openGame(id){
   else if(id==='xo') startXO();
   else if(id==='collect') startCollect();
 }
-function closeGame(){
+function cleanupGame(){
   if(gameLoop) cancelAnimationFrame(gameLoop);
-  clearInterval(gameLoop);
-  document.getElementById('gameOverlay').classList.remove('active');
-  currentGame = null; document.onkeydown = null;
+  if(gameLoop) clearInterval(gameLoop);
+  if(gameRaf) cancelAnimationFrame(gameRaf);
+  gameTimers.forEach(t=>{clearTimeout(t);clearInterval(t);});
+  gameTimers=[]; gameLoop=null; gameRaf=null;
+  document.onkeydown=null; document.onkeyup=null;
+  if(canvas){canvas.onclick=null;canvas.ontouchstart=null;canvas.ontouchend=null;canvas.ontouchmove=null;canvas.onmousemove=null;}
 }
-function restartGame(){ closeGame(); openGame(currentGame); }
+function closeGame(){ cleanupGame(); document.getElementById('gameOverlay').classList.remove('active'); currentGame=null; gameEnded=false; }
+function restartGame(){ const id=currentGame; if(!id) return; cleanupGame(); gameEnded=false; document.getElementById('gameOverlay').classList.remove('active'); setTimeout(()=>openGame(id),0); }
 function endGame(score){
+  if(gameEnded || !currentGame) return;
+  gameEnded=true;
   const g = games.find(x=>x.id===currentGame);
+  if(!g){ cleanupGame(); return; }
   const earned = Math.max(1, Math.floor(score * g.points / 10));
   user.coins += earned; saveUser(); updateUI();
   showToast('🏆 انتهت اللعبة! ربحت '+earned+' نقطة','success');
   challenges[0].progress = Math.min(challenges[0].progress+1,3);
   challenges[2].progress = Math.min(user.coins,100);
   renderChallenges(); renderLeaderboard();
+  cleanupGame();
   if(token) syncWithServer();
 }
 
@@ -912,7 +923,7 @@ function startFlappy(){
 function startMemory(){
   const emojis = ['🦁','🐯','🐻','🐨','🐼','🐸','🐙','🦄'];
   const cards = [...emojis,...emojis].sort(()=>Math.random()-0.5);
-  let flipped=[],matched=0,score=0,canClick=true;
+  let flipped=[],matched=[],score=0,canClick=true;
   const cols=4,rows=4, w=canvas.width/cols, h=canvas.height/rows;
   function draw(){
     ctx.fillStyle='#0f0f14';ctx.fillRect(0,0,canvas.width,canvas.height);
@@ -973,6 +984,7 @@ function startWhack(){
   };
   const moleTimer = setInterval(()=>{ active=Math.floor(Math.random()*holes); setTimeout(()=>{if(active!==-1)active=-1;},700); },1000);
   const gameTimer = setInterval(()=>{ time--;if(time<=0){clearInterval(moleTimer);clearInterval(gameTimer);endGame(score);} },1000);
+  gameTimers.push(moleTimer,gameTimer);
   gameLoop = setInterval(draw,50);
 }
 
@@ -1003,11 +1015,11 @@ function startBreakout(){
   }
   canvas.onmousemove = e=>{
     const rect=canvas.getBoundingClientRect();
-    paddle.x=(e.clientX-rect.left)*(canvas.width/rect.width)-paddle.w/2;
+    paddle.x=(e.clientX-rect.left)*(canvas.width/rect.width)-paddle.w/2; paddle.x=Math.max(0,Math.min(canvas.width-paddle.w,paddle.x));
   };
   canvas.ontouchmove = e=>{
     const rect=canvas.getBoundingClientRect();
-    paddle.x=(e.touches[0].clientX-rect.left)*(canvas.width/rect.width)-paddle.w/2;
+    paddle.x=(e.touches[0].clientX-rect.left)*(canvas.width/rect.width)-paddle.w/2; paddle.x=Math.max(0,Math.min(canvas.width-paddle.w,paddle.x));
     e.preventDefault();
   };
   gameLoop = requestAnimationFrame(update);
@@ -1067,11 +1079,11 @@ function startPong(){
   }
   canvas.onmousemove = e=>{
     const rect=canvas.getBoundingClientRect();
-    player.y=(e.clientY-rect.top)*(canvas.height/rect.height)-player.h/2;
+    player.y=(e.clientY-rect.top)*(canvas.height/rect.height)-player.h/2; player.y=Math.max(0,Math.min(canvas.height-player.h,player.y));
   };
   canvas.ontouchmove = e=>{
     const rect=canvas.getBoundingClientRect();
-    player.y=(e.touches[0].clientY-rect.top)*(canvas.height/rect.height)-player.h/2;
+    player.y=(e.touches[0].clientY-rect.top)*(canvas.height/rect.height)-player.h/2; player.y=Math.max(0,Math.min(canvas.height-player.h,player.y));
     e.preventDefault();
   };
   gameLoop = requestAnimationFrame(update);
