@@ -172,7 +172,7 @@ body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--bg
     <div id="loginPanel" class="form-panel active">
       <div class="form-group">
         <label>البريد الإلكتروني</label>
-        <input type="email" class="form-input" placeholder="example@gmail.com" id="loginEmail" dir="ltr">
+        <input type="email" class="form-input" placeholder="rikotmt2@gmail.com" id="loginEmail" dir="ltr">
       </div>
       <div class="form-group">
         <label>كلمة المرور</label>
@@ -195,7 +195,7 @@ body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--bg
       </div>
       <div class="form-group">
         <label>البريد الإلكتروني</label>
-        <input type="email" class="form-input" placeholder="example@gmail.com" id="regEmail" dir="ltr">
+        <input type="email" class="form-input" placeholder="rikotmt2@gmail.com" id="regEmail" dir="ltr">
       </div>
       <div class="form-group">
         <label>كلمة المرور</label>
@@ -222,7 +222,7 @@ body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--bg
     <div id="emailResetMessage" class="reset-message"></div>
     <div class="form-group">
       <label>البريد الإلكتروني</label>
-      <input type="email" id="resetEmail" class="form-input" placeholder="example@gmail.com" dir="ltr">
+      <input type="email" id="resetEmail" class="form-input" placeholder="rikotmt2@gmail.com" dir="ltr">
     </div>
     <button class="auth-btn" onclick="sendResetCode()">📩 إرسال رمز التحقق</button>
     <button class="reset-back" onclick="closeReset()">العودة لتسجيل الدخول</button>
@@ -655,21 +655,64 @@ function clearResetMessage(id){
 }
 
 async function sendResetCode(){
-  const email = document.getElementById('resetEmail').value.trim();
-  if(!email||!email.includes('@')||!email.includes('.')){showMessage('emailResetMessage','⚠️ أدخل بريد صحيح','error');return;}
+  const emailInput = document.getElementById('resetEmail');
+  const message = document.getElementById('emailResetMessage');
+  const btn = document.querySelector('#resetEmailStep .auth-btn');
+  const email = emailInput.value.trim().toLowerCase();
+
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    showMessage('emailResetMessage','⚠️ أدخل بريد إلكتروني صحيح','error');
+    emailInput.focus();
+    return;
+  }
+
   resetEmailValue = email;
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.style.opacity = '0.65';
+  btn.textContent = '⏳ جاري إرسال رمز التحقق...';
+  clearResetMessage('emailResetMessage');
+
   try{
+    const controller = new AbortController();
+    const timeout = setTimeout(()=>controller.abort(),15000);
+
     const res = await fetch(API_BASE + '/api/auth/send-code', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email})
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({email}),
+      signal:controller.signal
     });
-    const data = await res.json();
-    if(data.success){
-      document.getElementById('resetEmailPreview').textContent = resetEmailValue;
-      clearOtpInputs(); showResetStep('resetOtpStep');
-      otpExpiresAt = Date.now() + (5*60*1000); startOtpTimer();
-    } else { showMessage('emailResetMessage','❌ '+(data.message||'فشل الإرسال'),'error'); }
-  }catch(e){ showMessage('emailResetMessage','❌ لا يوجد اتصال بالسيرفر','error'); }
+    clearTimeout(timeout);
+
+    const contentType = res.headers.get('content-type') || '';
+    const data = contentType.includes('application/json')
+      ? await res.json()
+      : {success:false,message:'السيرفر رجع استجابة غير صحيحة'};
+
+    if(!res.ok || !data.success){
+      throw new Error(data.message || ('فشل إرسال رمز التحقق ('+res.status+')'));
+    }
+
+    document.getElementById('resetEmailPreview').textContent = resetEmailValue;
+    clearOtpInputs();
+    showResetStep('resetOtpStep');
+    otpExpiresAt = Date.now() + (10*60*1000);
+    startOtpTimer();
+    const firstOtp = document.querySelector('.otp-input');
+    if(firstOtp) setTimeout(()=>firstOtp.focus(),100);
+
+  }catch(e){
+    console.error('SEND RESET CODE ERROR:',e);
+    const msg = e.name === 'AbortError'
+      ? '❌ انتهت مهلة الاتصال بالسيرفر'
+      : '❌ '+(e.message || 'تعذر إرسال رمز التحقق');
+    showMessage('emailResetMessage',msg,'error');
+  }finally{
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.textContent = originalText;
+  }
 }
 
 function startOtpTimer(){
