@@ -17,5 +17,8 @@
     "express": "^5.2.1",
     "lowdb": "^7.0.1",
     "nodemailer": "^9.0.6"
+  },
+  "devDependencies": {
+    "@vercel/node": "^10.0.0"
   }
 }
