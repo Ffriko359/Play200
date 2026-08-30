@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 require("dotenv").config();
 
 const authRoutes = require("./routes/auth");
@@ -9,6 +10,9 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Frontend
+app.get("/", (req,res) => { res.sendFile(path.join(__dirname,"index.html")); });
 
 // Health check
 app.get("/api/health", (req, res) => {

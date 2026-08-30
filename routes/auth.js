@@ -245,4 +245,141 @@ router.post("/login", async (req, res) => {
     }
 });
 
+// =========================================================
+// FORGOT PASSWORD
+// =========================================================
+
+router.post("/forgot-password", async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: "المرجو إدخال البريد الإلكتروني"
+            });
+        }
+
+        const cleanEmail = email.trim().toLowerCase();
+
+        const user = findUserByEmail(cleanEmail);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "الحساب غير موجود"
+            });
+        }
+
+        const code = Math.floor(
+            100000 + Math.random() * 900000
+        ).toString();
+
+        const expiresAt =
+            Date.now() + 10 * 60 * 1000;
+
+        createOtp(
+            user.id,
+            code,
+            expiresAt
+        );
+
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: cleanEmail,
+            subject: "CODE ⚡ LAB - استعادة كلمة المرور",
+            text: `مرحبا ${user.name},
+
+رمز استعادة كلمة المرور ديالك هو:
+
+${code}
+
+هذا الرمز صالح لمدة 10 دقائق.
+
+CODE ⚡ LAB`
+        });
+
+        console.log(
+            `PASSWORD RESET CODE SENT TO: ${cleanEmail}`
+        );
+
+        return res.json({
+            success: true,
+            message: "تم إرسال رمز استعادة كلمة المرور إلى بريدك الإلكتروني 📧",
+            expiresIn: 600
+        });
+
+    } catch (error) {
+        console.error(
+            "FORGOT PASSWORD ERROR:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: "فشل إرسال رمز استعادة كلمة المرور"
+        });
+    }
+});
+
+
+// =========================================================
+// VERIFY RESET CODE
+// =========================================================
+
+router.post("/verify-reset-code", (req, res) => {
+    try {
+        const { email, otp } = req.body;
+
+        if (!email || !otp) {
+            return res.status(400).json({
+                success: false,
+                message: "المرجو إدخال البريد الإلكتروني ورمز التحقق"
+            });
+        }
+
+        const cleanEmail =
+            email.trim().toLowerCase();
+
+        const user =
+            findUserByEmail(cleanEmail);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "الحساب غير موجود"
+            });
+        }
+
+        const valid =
+            verifyOtp(
+                user.id,
+                otp.toString()
+            );
+
+        if (!valid) {
+            return res.status(400).json({
+                success: false,
+                message: "رمز التحقق غير صحيح أو منتهي الصلاحية"
+            });
+        }
+
+        return res.json({
+            success: true,
+            message: "تم التحقق من الرمز بنجاح ✅"
+        });
+
+    } catch (error) {
+        console.error(
+            "VERIFY RESET CODE ERROR:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: "حدث خطأ في السيرفر"
+        });
+    }
+});
+
 module.exports = router;

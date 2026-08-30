@@ -74,6 +74,18 @@ function verifyOtp(userId, code) {
   return true;
 }
 
+
+function updateUserPassword(userId, hashedPassword) {
+  const user = db.users.find(user => user.id === userId);
+
+  if (!user) return false;
+
+  user.password = hashedPassword;
+  save();
+
+  return true;
+}
+
 console.log("CODE⚡LAB Database initialized successfully ✅");
 
 module.exports = {
@@ -83,5 +95,6 @@ module.exports = {
   findUserById,
   createUser,
   createOtp,
-  verifyOtp
+  verifyOtp,
+  updateUserPassword
 };
